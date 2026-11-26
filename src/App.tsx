@@ -60,6 +60,7 @@ export default function App() {
   const [jobs, setJobs] = useState<UploadJob[]>([])
   const [dragOver, setDragOver] = useState(false)
   const [notice, setNotice] = useState('')
+  const [deleteTarget, setDeleteTarget] = useState<ModelMeta | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const refresh = useCallback(async () => {
@@ -163,12 +164,17 @@ export default function App() {
     setCategory('all')
   }
 
-  // Delete from the card: removes the WHOLE file (metadata + GLB blob in
+  // Delete flow: the trash button (card) and the delete button (detail) only
+  // open the styled confirmation modal — never a native browser dialog.
+  // Confirming in the modal removes the WHOLE file (metadata + GLB blob in
   // IndexedDB, via deleteModel), not just the thumbnail.
-  const handleDeleteCard = async (model: ModelMeta) => {
-    if (!window.confirm(t.confirmDeleteName(model.name))) return
-    await deleteModel(model.id)
-    if (selectedId === model.id) setSelectedId(null)
+  const requestDelete = (model: ModelMeta) => setDeleteTarget(model)
+  const confirmDeleteModel = async () => {
+    if (!deleteTarget) return
+    const target = deleteTarget
+    setDeleteTarget(null)
+    await deleteModel(target.id)
+    if (selectedId === target.id) setSelectedId(null)
     setNotice(t.deletedOk)
     await refresh()
   }
@@ -304,7 +310,7 @@ export default function App() {
                   className="card-delete"
                   aria-label={`${t.deleteFromLibrary}: ${m.name}`}
                   title={`${t.deleteFromLibrary}: ${m.name}`}
-                  onClick={(e) => { e.stopPropagation(); void handleDeleteCard(m) }}
+                  onClick={(e) => { e.stopPropagation(); requestDelete(m) }}
                 >
                   <span aria-hidden="true">🗑</span>
                 </button>
@@ -355,12 +361,17 @@ export default function App() {
             await updateMeta(updated)
             await refresh()
           }}
-          onDeleted={async () => {
-            await deleteModel(selected.id)
-            setSelectedId(null)
-            await refresh()
-          }}
+          onRequestDelete={() => setDeleteTarget(selected)}
           onNotice={setNotice}
+        />
+      )}
+
+      {deleteTarget && (
+        <DeleteConfirmModal
+          model={deleteTarget}
+          t={t}
+          onCancel={() => setDeleteTarget(null)}
+          onConfirm={() => void confirmDeleteModel()}
         />
       )}
 
@@ -372,15 +383,58 @@ export default function App() {
   )
 }
 
+function DeleteConfirmModal({
+  model, t, onCancel, onConfirm,
+}: {
+  model: ModelMeta
+  t: Strings
+  onCancel: () => void
+  onConfirm: () => void
+}) {
+  const cancelRef = useRef<HTMLButtonElement>(null)
+  useEffect(() => {
+    // Safe default: focus Cancel so keyboard users don't delete by accident.
+    cancelRef.current?.focus()
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onCancel()
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [onCancel])
+  return (
+    <div className="confirm-overlay" onClick={onCancel}>
+      <div
+        className="confirm-dialog"
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="delete-confirm-title"
+        aria-describedby="delete-confirm-text"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2 id="delete-confirm-title"><span aria-hidden="true">🗑 </span>{t.deleteConfirmTitle}</h2>
+        <p id="delete-confirm-text">{t.confirmDeleteName(model.name)}</p>
+        <div className="confirm-actions">
+          <button type="button" className="btn" ref={cancelRef} onClick={onCancel}>
+            {t.cancel}
+          </button>
+          <button type="button" className="btn btn-danger-solid" onClick={onConfirm}>
+            {t.delete}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function DetailView({
-  model, t, lang, onClose, onChanged, onDeleted, onNotice,
+  model, t, lang, onClose, onChanged, onRequestDelete, onNotice,
 }: {
   model: ModelMeta
   t: Strings
   lang: Lang
   onClose: () => void
   onChanged: (m: ModelMeta) => Promise<void>
-  onDeleted: () => Promise<void>
+  onRequestDelete: () => void
   onNotice: (s: string) => void
 }) {
   const [blob, setBlob] = useState<ArrayBuffer | null>(null)
@@ -563,7 +617,7 @@ function DetailView({
                   <button
                     type="button"
                     className="btn btn-danger"
-                    onClick={() => { if (window.confirm(t.confirmDelete)) void onDeleted() }}
+                    onClick={onRequestDelete}
                   >
                     {t.delete}
                   </button>

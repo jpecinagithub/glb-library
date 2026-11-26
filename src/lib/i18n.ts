@@ -52,6 +52,7 @@ export interface Strings {
   backToLibrary: string
   confirmDelete: string
   confirmDeleteName: (name: string) => string
+  deleteConfirmTitle: string
   deleteFromLibrary: string
   changeGroup: string
   deletedOk: string
@@ -133,6 +134,7 @@ export const STRINGS: Record<Lang, Strings> = {
     backToLibrary: '← Biblioteca',
     confirmDelete: '¿Eliminar este modelo de tu biblioteca? Esta acción no se puede deshacer.',
     confirmDeleteName: (name: string) => `¿Eliminar «${name}» de tu biblioteca? Se borrará el archivo completo, no solo la miniatura. Esta acción no se puede deshacer.`,
+    deleteConfirmTitle: 'Eliminar modelo',
     deleteFromLibrary: 'Eliminar de la biblioteca',
     changeGroup: 'Cambiar grupo',
     deletedOk: 'Modelo eliminado de la biblioteca',
@@ -219,6 +221,7 @@ export const STRINGS: Record<Lang, Strings> = {
     backToLibrary: '← Library',
     confirmDelete: 'Delete this model from your library? This cannot be undone.',
     confirmDeleteName: (name: string) => `Delete “${name}” from your library? The whole file will be deleted, not just the thumbnail. This cannot be undone.`,
+    deleteConfirmTitle: 'Delete model',
     deleteFromLibrary: 'Delete from library',
     changeGroup: 'Change group',
     deletedOk: 'Model deleted from the library',
