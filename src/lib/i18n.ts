@@ -51,6 +51,10 @@ export interface Strings {
   close: string
   backToLibrary: string
   confirmDelete: string
+  confirmDeleteName: (name: string) => string
+  deleteFromLibrary: string
+  changeGroup: string
+  deletedOk: string
   useAsThumbnail: string
   thumbnailSaved: string
   thumbnailFailed: string
@@ -128,6 +132,10 @@ export const STRINGS: Record<Lang, Strings> = {
     close: 'Cerrar',
     backToLibrary: '← Biblioteca',
     confirmDelete: '¿Eliminar este modelo de tu biblioteca? Esta acción no se puede deshacer.',
+    confirmDeleteName: (name: string) => `¿Eliminar «${name}» de tu biblioteca? Se borrará el archivo completo, no solo la miniatura. Esta acción no se puede deshacer.`,
+    deleteFromLibrary: 'Eliminar de la biblioteca',
+    changeGroup: 'Cambiar grupo',
+    deletedOk: 'Modelo eliminado de la biblioteca',
     useAsThumbnail: 'Usar esta vista como miniatura',
     thumbnailSaved: 'Miniatura actualizada',
     thumbnailFailed: 'No se pudo generar la miniatura en este navegador',
@@ -210,6 +218,10 @@ export const STRINGS: Record<Lang, Strings> = {
     close: 'Close',
     backToLibrary: '← Library',
     confirmDelete: 'Delete this model from your library? This cannot be undone.',
+    confirmDeleteName: (name: string) => `Delete “${name}” from your library? The whole file will be deleted, not just the thumbnail. This cannot be undone.`,
+    deleteFromLibrary: 'Delete from library',
+    changeGroup: 'Change group',
+    deletedOk: 'Model deleted from the library',
     useAsThumbnail: 'Use this view as thumbnail',
     thumbnailSaved: 'Thumbnail updated',
     thumbnailFailed: 'Could not generate a thumbnail in this browser',

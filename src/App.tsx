@@ -163,6 +163,24 @@ export default function App() {
     setCategory('all')
   }
 
+  // Delete from the card: removes the WHOLE file (metadata + GLB blob in
+  // IndexedDB, via deleteModel), not just the thumbnail.
+  const handleDeleteCard = async (model: ModelMeta) => {
+    if (!window.confirm(t.confirmDeleteName(model.name))) return
+    await deleteModel(model.id)
+    if (selectedId === model.id) setSelectedId(null)
+    setNotice(t.deletedOk)
+    await refresh()
+  }
+
+  // Change group from the card: saves to IndexedDB at once; refresh()
+  // reloads the list, so the filter counters and the card update.
+  const handleChangeGroup = async (model: ModelMeta, next: Category) => {
+    if (next === model.category) return
+    await updateMeta({ ...model, category: next, updatedAt: Date.now() })
+    await refresh()
+  }
+
   return (
     <div className="app">
       <header className="header">
@@ -281,6 +299,15 @@ export default function App() {
                     <small>{t.noThumbnail}</small>
                   </div>
                 )}
+                <button
+                  type="button"
+                  className="card-delete"
+                  aria-label={`${t.deleteFromLibrary}: ${m.name}`}
+                  title={`${t.deleteFromLibrary}: ${m.name}`}
+                  onClick={(e) => { e.stopPropagation(); void handleDeleteCard(m) }}
+                >
+                  <span aria-hidden="true">🗑</span>
+                </button>
               </div>
               <div className="card-body">
                 <h3>{m.name}</h3>
@@ -291,6 +318,20 @@ export default function App() {
                   {m.stats.meshes} {t.meshes.toLowerCase()} · {m.stats.triangles.toLocaleString()} {t.triangles.toLowerCase()}
                   {m.stats.animations.length > 0 && ` · ${m.stats.animations.length} ${t.animations.toLowerCase()}`}
                 </p>
+                <label className="card-group" onClick={(e) => e.stopPropagation()}>
+                  <span>{t.categoryLabel}</span>
+                  <select
+                    value={m.category}
+                    aria-label={`${t.changeGroup}: ${m.name}`}
+                    onClick={(e) => e.stopPropagation()}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onChange={(e) => { e.stopPropagation(); void handleChangeGroup(m, e.target.value as Category) }}
+                  >
+                    {CATEGORIES.map((c) => (
+                      <option key={c} value={c}>{t.category[c]}</option>
+                    ))}
+                  </select>
+                </label>
                 {m.tags.length > 0 && (
                   <div className="tags">
                     {m.tags.map((tag) => (

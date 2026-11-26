@@ -134,8 +134,39 @@ button, input, select, textarea { font: inherit; }
   transition: box-shadow 0.15s ease, transform 0.15s ease;
 }
 .card:hover { box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1); transform: translateY(-2px); }
-.thumb { aspect-ratio: 4 / 3; background: #e8eef5; overflow: hidden; }
+.thumb { aspect-ratio: 4 / 3; background: #e8eef5; overflow: hidden; position: relative; }
 .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* Delete button on the card: always visible (also on mobile, where there is
+   no hover) so the whole file can be removed without opening the detail. */
+.card-delete {
+  position: absolute;
+  top: 8px; right: 8px;
+  width: 34px; height: 34px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--danger);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  z-index: 2;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+}
+.card-delete:hover, .card-delete:focus-visible { background: #fef2f2; outline: 2px solid var(--danger); outline-offset: 1px; }
+/* Group picker on the card: change the category in one tap, no detail needed. */
+.card-group {
+  display: flex; align-items: center; gap: 8px;
+  margin-top: 10px;
+  font-size: 0.85rem; color: var(--muted);
+}
+.card-group select {
+  flex: 1; min-width: 0;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+}
 .thumb-placeholder {
   width: 100%; height: 100%;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
